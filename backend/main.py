@@ -181,21 +181,41 @@ async def refresh_accounts(token_id: int, db: Session = Depends(get_db)):
     client = NewsBreakClient(token.token)
     try:
         response = await client.get_ad_accounts()
+        print(f"NewsBreak API Response: {response}")  # Debug logging
         
-        if response.get("code") != 0:
-            raise HTTPException(status_code=400, detail=response.get("message", "API error"))
+        # Handle different response formats
+        if isinstance(response, dict):
+            # Check for error code
+            code = response.get("code")
+            if code is not None and code != 0:
+                error_msg = response.get("message") or response.get("msg") or f"API error code: {code}"
+                raise HTTPException(status_code=400, detail=f"NewsBreak API Error: {error_msg}")
+            
+            # Try to extract accounts from various response structures
+            accounts = []
+            if "data" in response:
+                data = response["data"]
+                if isinstance(data, list):
+                    accounts = data
+                elif isinstance(data, dict):
+                    accounts = data.get("list", []) or data.get("accounts", []) or []
+            elif "list" in response:
+                accounts = response["list"]
+            elif "accounts" in response:
+                accounts = response["accounts"]
+        else:
+            raise HTTPException(status_code=400, detail=f"Unexpected response format: {type(response)}")
         
         # Clear existing cached accounts for this token
         db.query(CachedAdAccount).filter(CachedAdAccount.access_token_id == token_id).delete()
         
         # Cache new accounts
-        accounts = response.get("data", {}).get("list", [])
         for account in accounts:
             cached = CachedAdAccount(
                 access_token_id=token_id,
-                newsbreak_account_id=account.get("id"),
-                name=account.get("name"),
-                status=account.get("status")
+                newsbreak_account_id=account.get("id") or account.get("account_id") or account.get("ad_account_id"),
+                name=account.get("name") or account.get("account_name"),
+                status=account.get("status") or "active"
             )
             db.add(cached)
         
@@ -203,10 +223,14 @@ async def refresh_accounts(token_id: int, db: Session = Depends(get_db)):
         token.last_used = datetime.utcnow()
         db.commit()
         
-        return {"message": f"Refreshed {len(accounts)} accounts", "accounts": accounts}
+        return {"message": f"Refreshed {len(accounts)} accounts", "accounts": accounts, "raw_response": response}
     
+    except HTTPException:
+        raise
     except Exception as e:
-        raise HTTPException(status_code=500, detail=str(e))
+        import traceback
+        print(f"Error refreshing accounts: {traceback.format_exc()}")
+        raise HTTPException(status_code=500, detail=f"Error: {str(e)}")
 
 
 # ==================== Ad Account Routes ====================

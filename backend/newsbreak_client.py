@@ -22,15 +22,25 @@ class NewsBreakClient:
     
     async def _request(self, method: str, endpoint: str, **kwargs) -> Dict[str, Any]:
         """Make an async request to the NewsBreak API"""
-        async with httpx.AsyncClient() as client:
+        async with httpx.AsyncClient(timeout=30.0) as client:
             url = f"{BASE_URL}{endpoint}"
+            print(f"Making {method} request to: {url}")  # Debug
             response = await client.request(
                 method=method,
                 url=url,
                 headers=self.headers,
                 **kwargs
             )
-            return response.json()
+            print(f"Response status: {response.status_code}")  # Debug
+            print(f"Response body: {response.text[:500]}")  # Debug (first 500 chars)
+            
+            if response.status_code >= 400:
+                return {"code": response.status_code, "message": f"HTTP {response.status_code}: {response.text}"}
+            
+            try:
+                return response.json()
+            except Exception as e:
+                return {"code": -1, "message": f"Failed to parse JSON: {str(e)}", "raw": response.text}
     
     # ==================== Account Management ====================
     
