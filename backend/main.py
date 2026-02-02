@@ -188,21 +188,30 @@ async def refresh_accounts(token_id: int, db: Session = Depends(get_db)):
             # Check for error code
             code = response.get("code")
             if code is not None and code != 0:
-                error_msg = response.get("message") or response.get("msg") or f"API error code: {code}"
+                error_msg = response.get("message") or response.get("msg") or response.get("errMsg") or f"API error code: {code}"
                 raise HTTPException(status_code=400, detail=f"NewsBreak API Error: {error_msg}")
             
-            # Try to extract accounts from various response structures
+            # Extract accounts - NewsBreak returns organizations with nested adAccounts
             accounts = []
             if "data" in response:
                 data = response["data"]
-                if isinstance(data, list):
+                if isinstance(data, dict) and "list" in data:
+                    # Response structure: { data: { list: [{ id, name, adAccounts: [...] }] } }
+                    orgs = data.get("list", [])
+                    for org in orgs:
+                        org_id = org.get("id")
+                        org_name = org.get("name")
+                        ad_accounts = org.get("adAccounts", [])
+                        for acc in ad_accounts:
+                            accounts.append({
+                                "id": acc.get("id"),
+                                "name": acc.get("name"),
+                                "org_id": org_id,
+                                "org_name": org_name,
+                                "createTime": acc.get("createTime")
+                            })
+                elif isinstance(data, list):
                     accounts = data
-                elif isinstance(data, dict):
-                    accounts = data.get("list", []) or data.get("accounts", []) or []
-            elif "list" in response:
-                accounts = response["list"]
-            elif "accounts" in response:
-                accounts = response["accounts"]
         else:
             raise HTTPException(status_code=400, detail=f"Unexpected response format: {type(response)}")
         

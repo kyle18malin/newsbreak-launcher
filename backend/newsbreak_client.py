@@ -44,9 +44,14 @@ class NewsBreakClient:
     
     # ==================== Account Management ====================
     
-    async def get_ad_accounts(self) -> Dict[str, Any]:
-        """Get all ad accounts"""
-        return await self._request("GET", "/adAccount/getList")
+    async def get_ad_accounts(self, org_ids: Optional[List[str]] = None) -> Dict[str, Any]:
+        """Get all ad accounts grouped by organization"""
+        # Build query params for orgIds
+        params = {}
+        if org_ids:
+            # NewsBreak expects multiple orgIds params like ?orgIds=123&orgIds=456
+            params = {"orgIds": org_ids}
+        return await self._request("GET", "/ad-account/getGroupsByOrgIds", params=params)
     
     async def get_account_spending_cap(self, ad_account_id: int) -> Dict[str, Any]:
         """Get account spending cap"""
