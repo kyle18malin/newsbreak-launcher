@@ -535,16 +535,35 @@ async def get_stats(db: Session = Depends(get_db)):
 # ==================== Static Files (Frontend) ====================
 
 # Serve static files if the frontend build exists
-frontend_path = os.path.join(os.path.dirname(__file__), "..", "frontend", "dist")
-if os.path.exists(frontend_path):
+# Check multiple possible locations
+possible_paths = [
+    os.path.join(os.path.dirname(__file__), "frontend", "dist"),  # Docker: /app/backend/frontend/dist
+    os.path.join(os.path.dirname(__file__), "..", "frontend", "dist"),  # Local dev
+]
+
+frontend_path = None
+for path in possible_paths:
+    if os.path.exists(path):
+        frontend_path = path
+        break
+
+if frontend_path:
     app.mount("/assets", StaticFiles(directory=os.path.join(frontend_path, "assets")), name="assets")
+    
+    @app.get("/")
+    async def serve_index():
+        """Serve the frontend index"""
+        return FileResponse(os.path.join(frontend_path, "index.html"))
     
     @app.get("/{full_path:path}")
     async def serve_frontend(full_path: str):
         """Serve the frontend for all non-API routes"""
-        if full_path.startswith("api/"):
+        if full_path.startswith("api"):
             raise HTTPException(status_code=404)
-        return FileResponse(os.path.join(frontend_path, "index.html"))
+        index_file = os.path.join(frontend_path, "index.html")
+        if os.path.exists(index_file):
+            return FileResponse(index_file)
+        raise HTTPException(status_code=404)
 
 
 if __name__ == "__main__":
