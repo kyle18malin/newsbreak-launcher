@@ -1,0 +1,186 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+  --nb-red: #E31837;
+  --nb-dark: #1A1A2E;
+  --nb-darker: #0F0F1A;
+}
+
+body {
+  @apply bg-nb-darker text-white antialiased;
+  font-family: 'Outfit', system-ui, sans-serif;
+}
+
+/* Custom scrollbar */
+::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+
+::-webkit-scrollbar-track {
+  @apply bg-nb-darker;
+}
+
+::-webkit-scrollbar-thumb {
+  @apply bg-nb-dark rounded-full;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  @apply bg-gray-600;
+}
+
+/* Glass effect */
+.glass {
+  @apply bg-white/5 backdrop-blur-xl border border-white/10;
+}
+
+/* Gradient text */
+.gradient-text {
+  @apply bg-gradient-to-r from-nb-red via-nb-accent to-nb-gold bg-clip-text text-transparent;
+}
+
+/* Animated gradient background */
+.gradient-bg {
+  background: linear-gradient(-45deg, #1A1A2E, #E31837, #1A1A2E, #FF4757);
+  background-size: 400% 400%;
+  animation: gradient 15s ease infinite;
+}
+
+@keyframes gradient {
+  0% { background-position: 0% 50%; }
+  50% { background-position: 100% 50%; }
+  100% { background-position: 0% 50%; }
+}
+
+/* Pulse glow effect */
+.glow {
+  box-shadow: 0 0 20px rgba(227, 24, 55, 0.3);
+}
+
+.glow:hover {
+  box-shadow: 0 0 30px rgba(227, 24, 55, 0.5);
+}
+
+/* Button styles */
+.btn-primary {
+  @apply px-6 py-3 bg-gradient-to-r from-nb-red to-nb-accent text-white font-semibold rounded-xl
+         transition-all duration-300 hover:scale-105 hover:shadow-lg hover:shadow-nb-red/30
+         active:scale-95 disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:scale-100;
+}
+
+.btn-secondary {
+  @apply px-6 py-3 bg-white/10 text-white font-semibold rounded-xl border border-white/20
+         transition-all duration-300 hover:bg-white/20 hover:border-white/30
+         active:scale-95 disabled:opacity-50 disabled:cursor-not-allowed;
+}
+
+/* Card styles */
+.card {
+  @apply bg-nb-dark/50 backdrop-blur-lg rounded-2xl border border-white/10 p-6
+         transition-all duration-300 hover:border-white/20;
+}
+
+/* Input styles */
+.input {
+  @apply w-full px-4 py-3 bg-white/5 border border-white/10 rounded-xl
+         text-white placeholder-gray-500 focus:outline-none focus:border-nb-red/50
+         focus:ring-2 focus:ring-nb-red/20 transition-all duration-200;
+}
+
+/* Select styles */
+.select {
+  @apply w-full px-4 py-3 bg-white/5 border border-white/10 rounded-xl
+         text-white focus:outline-none focus:border-nb-red/50
+         focus:ring-2 focus:ring-nb-red/20 transition-all duration-200
+         appearance-none cursor-pointer;
+  background-image: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 20 20'%3e%3cpath stroke='%236b7280' stroke-linecap='round' stroke-linejoin='round' stroke-width='1.5' d='M6 8l4 4 4-4'/%3e%3c/svg%3e");
+  background-position: right 0.75rem center;
+  background-repeat: no-repeat;
+  background-size: 1.5em 1.5em;
+}
+
+.select option {
+  @apply bg-nb-dark text-white;
+}
+
+/* Table styles */
+.table-container {
+  @apply overflow-x-auto rounded-xl;
+}
+
+.table {
+  @apply w-full text-left;
+}
+
+.table th {
+  @apply px-4 py-3 bg-white/5 text-gray-400 font-medium text-sm uppercase tracking-wider;
+}
+
+.table td {
+  @apply px-4 py-4 border-t border-white/5;
+}
+
+.table tr:hover td {
+  @apply bg-white/5;
+}
+
+/* Checkbox styles */
+.checkbox {
+  @apply w-5 h-5 rounded bg-white/10 border border-white/20 
+         checked:bg-nb-red checked:border-nb-red
+         focus:ring-2 focus:ring-nb-red/20 focus:ring-offset-0
+         cursor-pointer transition-all duration-200;
+}
+
+/* Badge styles */
+.badge {
+  @apply inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium;
+}
+
+.badge-success {
+  @apply bg-emerald-500/20 text-emerald-400 border border-emerald-500/30;
+}
+
+.badge-warning {
+  @apply bg-amber-500/20 text-amber-400 border border-amber-500/30;
+}
+
+.badge-error {
+  @apply bg-red-500/20 text-red-400 border border-red-500/30;
+}
+
+.badge-info {
+  @apply bg-blue-500/20 text-blue-400 border border-blue-500/30;
+}
+
+/* Modal backdrop */
+.modal-backdrop {
+  @apply fixed inset-0 bg-black/60 backdrop-blur-sm z-50 flex items-center justify-center p-4;
+}
+
+/* Animations */
+@keyframes slideIn {
+  from {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.animate-slide-in {
+  animation: slideIn 0.3s ease-out;
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+.animate-fade-in {
+  animation: fadeIn 0.2s ease-out;
+}
